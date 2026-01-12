@@ -1,79 +1,145 @@
 # 🎬 Sentiment Analysis with Explainable AI (XAI)
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red)
-![Transformers](https://img.shields.io/badge/🤗%20Transformers-4.30%2B-yellow)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange)
+![HuggingFace](https://img.shields.io/badge/HuggingFace-Transformers-yellow)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Colab](https://img.shields.io/badge/Google%20Colab-Supported-orange)
+![Colab](https://img.shields.io/badge/Google-Colab-F9AB00)
 
-## 📖 Overview
+A hybrid deep learning model for sentiment analysis that combines BERT's contextual understanding with LSTM's sequential processing capabilities, enhanced with LIME for model interpretability and explainability.
 
-A comprehensive sentiment analysis system using fine-tuned DistilBERT on IMDB movie reviews, with integrated explainability using LIME and Integrated Gradients. This project demonstrates not just model building, but also **why** the model makes its predictions.
+## 📋 Overview
 
-## 🎯 Key Features
+This project implements an explainable sentiment analysis system that:
+- Uses a BERT-LSTM hybrid architecture for improved text classification
+- Incorporates LIME (Local Interpretable Model-agnostic Explanations) for model interpretability
+- Provides visual explanations of model predictions
+- Supports deployment and sharing via Hugging Face Hub
 
-- **Fine-tuned DistilBERT** for binary sentiment classification (Positive/Negative)
-- **Dual Explainability Methods**: LIME (local) and Integrated Gradients (gradient-based)
-- **Comprehensive Evaluation**: Accuracy, F1-score, confusion matrix, error analysis
-- **Visual Explanations**: Heatmaps, token attributions, interactive HTML outputs
-- **Reproducible Pipeline**: Complete notebook with all phases from setup to deployment
+## 🏗️ Architecture
 
-## 📊 Results Summary
+### Model Architecture
+1. **BERT Encoder**: Pretrained BERT-base model for contextual embeddings
+2. **LSTM Layer**: Captures sequential dependencies in the encoded representations
+3. **Classification Head**: Fully connected layers for sentiment prediction
+4. **LIME Explainer**: Generates local explanations for model predictions
 
-| Metric | Value |
-|--------|-------|
-| **Test Accuracy** | 94.2% |
-| **F1 Score** | 97.3% |
-| **Precision** | 95.3% |
-| **Recall** | 91.2% |
-| **Error Rate** | 8.6% |
+### Key Features
+- ✅ Hybrid BERT-LSTM architecture for enhanced performance
+- ✅ Model interpretability with LIME explanations
+- ✅ Visual heatmaps for feature importance
+- ✅ Support for multiple sentiment classes
+- ✅ Easy deployment to Hugging Face Hub
+- ✅ Comprehensive training pipeline with checkpointing
 
-### Confusion Matrix
-| | Predicted Negative | Predicted Positive |
-|---|---|---|
-| **Actual Negative** |    4746 | 254 |
-| **Actual Positive** | 0 | 0 |
+## 🚀 Installation
 
-### Error Analysis
-- **False Positives**: 179 (Negative reviews predicted as Positive)
-- **False Negatives**: 221 (Positive reviews predicted as Negative)
-- **Main Error Types**: Sarcasm (12%), Complex Negation (18%), Mixed Sentiment (24%)
+### Prerequisites
+- Python 3.8+
+- CUDA-capable GPU (recommended for training)
 
-
-## 🚀 Quick Start
-
-### Installation
-
+### Install Dependencies
 ```bash
-# Clone repository
-git clone https://github.com/yourusername/sentiment-analysis-xai.git
-cd sentiment-analysis-xai
+# Clone the repository
+git clone https://github.com/yourusername/explainable-sentiment-analysis.git
+cd explainable-sentiment-analysis
 
-# Install dependencies
+# Install requirements
 pip install -r requirements.txt
 ```
-## Basic Usage
+
+### Required Packages
 
 ```bash
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
-import torch
-
-# Load model
-model = AutoModelForSequenceClassification.from_pretrained("./models")
-tokenizer = AutoTokenizer.from_pretrained("./models/tokenizer")
-
-# Predict sentiment
-text = "This movie was absolutely fantastic! I loved every minute."
-inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
-
-with torch.no_grad():
-    outputs = model(**inputs)
-    probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
-    
-sentiment = "positive" if probs[0][1] > 0.5 else "negative"
-confidence = probs[0][1].item() if probs[0][1] > 0.5 else probs[0][0].item()
-
-print(f"Sentiment: {sentiment} (confidence: {confidence:.2%})")
+torch>=2.0.0
+transformers>=4.30.0
+lime>=0.2.0.1
+pandas>=1.5.0
+numpy>=1.24.0
+scikit-learn>=1.2.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+huggingface-hub>=0.15.0
+datasets>=2.12.0
+accelerate>=0.20.0
 ```
 
+## 📁 Project Structure
+
+```bash
+explainable-sentiment-analysis/
+│
+├── notebooks/
+│   └── Explainable_Sentiment_Analysis_using_BERT_LSTM_+_LIME_.ipynb
+│
+├── data/
+│   ├── train_data.csv         # Training dataset
+│   ├── test_data.csv          # Testing dataset
+│   └── processed/             # Processed data files
+│
+├── models/
+│   ├── best_model.pt          # Best trained model weights
+│   ├── checkpoint_epoch_1.pt  # Training checkpoints
+│   ├── checkpoint_epoch_2.pt
+│   ├── checkpoint_epoch_3.pt
+│   └── model.safetensors      # Hugging Face compatible format
+│
+├── outputs/
+│   ├── training_history.png   # Training metrics visualization
+│   └── explanations/          # Generated LIME explanations
+│
+├── requirements.txt           # Python dependencies
+├── config.yaml               # Configuration file
+└── README.md                 # This file
+```
+## 🎯 Usage
+
+### 1. Data Preparation
+
+```python
+from src.data_loader import SentimentDataset
+
+# Load and preprocess data
+dataset = SentimentDataset(
+    data_path="data/train_data.csv",
+    tokenizer_name="bert-base-uncased",
+    max_length=128
+)
+```
+### 2. Model Training
+```bash
+from src.train import SentimentTrainer
+
+trainer = SentimentTrainer(
+    model_name="bert-base-uncased",
+    num_classes=3,
+    lstm_hidden_size=256,
+    learning_rate=2e-5,
+    batch_size=32
+)
+
+# Train the model
+trainer.train(
+    train_dataset=dataset,
+    epochs=5,
+    save_dir="models/"
+)
+```
+### 3. Generate Explanations
+```bash
+from src.explain import LIMEExplainer
+
+explainer = LIMEExplainer(model_path="models/best_model.pt")
+text = "The movie was absolutely fantastic with great acting!"
+
+# Generate explanation
+explanation = explainer.explain(
+    text=text,
+    num_features=10,
+    num_samples=5000
+)
+
+# Visualize explanation
+explainer.visualize(explanation, save_path="outputs/explanations/")
+```
 
